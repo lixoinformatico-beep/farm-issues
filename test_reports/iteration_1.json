@@ -1,0 +1,53 @@
+{
+  "summary": "Full backend (pytest, 16 tests) + frontend (Playwright) testing of the pharmacy issues tracker. All backend endpoints and all critical frontend flows pass. App is in PT-PT, JWT via httpOnly cookies, all features in review request verified end-to-end.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Sheet/Dialog components", "issues": ["Console warning: 'Missing Description or aria-describedby for DialogContent' — non-blocking accessibility warning from Radix UI. Add DialogDescription (or aria-describedby) to CreateProblemaSheet and ProblemaDetailSheet for full a11y compliance."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_problemas_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional, low priority) Add DialogDescription or aria-describedby to the two Sheet components to silence Radix a11y warning."
+  ],
+  "critical_code_review_comments": [
+    "Auth: bcrypt hashing OK ($2b$), httpOnly cookies set with samesite=lax, CORS allow_credentials=true with explicit origins from env — solid.",
+    "Seed admin is idempotent: creates if missing, updates password if changed — meets playbook requirement.",
+    "MongoDB _id correctly excluded across all endpoints via projections / _clean().",
+    "No brute-force / rate-limit / lockout protection on /api/auth/login. Recommend adding a lockout after 5 failed attempts (per auth playbook).",
+    "JWT secret loaded from env — good; cookies use secure=False which is acceptable for preview environment but should be True in production behind HTTPS.",
+    "Pydantic ProblemaCreate enforces TIPOLOGIA/PRIORIDADE/ESTADO Literals — good input validation.",
+    "Frontend axios uses withCredentials and REACT_APP_BACKEND_URL — correct.",
+    "All required data-testid attributes are present and reachable; selectors match the spec in review_request."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_problemas_api.py (new)"
+  ],
+  "success_rate": {"backend": "100% (16/16)", "frontend": "100% (all listed flows)"},
+  "test_credentials": "admin@farmacias.pt / admin123 (seeded on startup, verified working)",
+  "seed_data_creation": "Tests create TEST_-prefixed problemas and follow-ups; cleanup fixture + manual sweep performed at end. DB left clean.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend tests live at /app/backend/tests/test_problemas_api.py and cover auth (login/logout/me/invalid), CRUD on /api/problemas, filters (estado/tipologia/q), follow-up with state change, /api/stats structure, and CSV export. Reuse for regression. UI: shadcn Select dropdowns need force=True click + small wait_for_timeout(300) before clicking option text. Detail sheet opens by clicking a problema row; selector pattern `tr:has-text(...)` works to find dynamically created rows.",
+  "verified_flows": [
+    "Login with admin@farmacias.pt/admin123 -> /dashboard OK",
+    "Invalid login shows PT message 'Credenciais inválidas' OK",
+    "Dashboard KPIs (Total/Abertos/Em Curso/Resolvidos) render with values OK",
+    "Logout redirects to /login; /problemas without auth redirects to /login OK",
+    "Novo problema sheet -> create with Tipologia TFO -> row appears in table OK",
+    "Filters: search by text returns 1 matching row; Clear filters works OK",
+    "Click row opens detail sheet with timeline + quick status actions OK",
+    "Add follow-up with novo_estado creates timeline entry and changes problema estado OK",
+    "Quick action 'Resolvido' updates estado (verified via detail-estado) OK",
+    "Relatorios page loads with export button OK",
+    "CSV export endpoint returns text/csv with PT-PT headers OK"
+  ]
+}
