@@ -1,0 +1,86 @@
+{
+  "theme": "LIGHT",
+  "archetype": "Archetype 1 (Organic & Earthy)",
+  "typography": {
+    "fonts": {
+      "heading": "Chivo",
+      "body": "IBM Plex Sans",
+      "mono": "IBM Plex Mono"
+    },
+    "hierarchy": {
+      "h1": "text-3xl sm:text-4xl tracking-tight leading-none text-[#1E231F] font-medium",
+      "h2": "text-xl sm:text-2xl tracking-tight leading-snug text-[#1E231F] font-medium",
+      "h3": "text-lg tracking-tight leading-snug text-[#1E231F] font-medium",
+      "label": "text-xs tracking-[0.2em] uppercase font-semibold text-[#5C665D]",
+      "body": "text-sm text-[#343A35] leading-relaxed"
+    }
+  },
+  "colors": {
+    "background": "#F4F3EF",
+    "surface": "#FFFFFF",
+    "surface_hover": "#F0EFEB",
+    "border": "#E5E3DB",
+    "text": {
+      "primary": "#1E231F",
+      "secondary": "#5C665D",
+      "muted": "#8A938B"
+    },
+    "brand": {
+      "primary": "#384C37",
+      "primary_hover": "#2B3A2A",
+      "primary_foreground": "#FFFFFF"
+    },
+    "status": {
+      "Aberto": {
+        "bg": "#FBEAE7",
+        "text": "#B84A39",
+        "border": "#F3C5BD"
+      },
+      "Em_Curso": {
+        "bg": "#FDF3E1",
+        "text": "#B48231",
+        "border": "#F6DAB0"
+      },
+      "Resolvido": {
+        "bg": "#EAF0EC",
+        "text": "#426B4F",
+        "border": "#C7D8CE"
+      }
+    }
+  },
+  "layout": {
+    "style": "Control Room Grid",
+    "spacing_scale": "Dense (p-4, p-6) for data compactness",
+    "borderRadius": "rounded-sm (2px max) for a clinical, precise feel",
+    "shadows": "None. Use 1px solid borders (#E5E3DB) for separation.",
+    "patterns": [
+      "Top summary row for KPIs (4 cards)",
+      "Main view: Table list of problems with a sophisticated filter bar",
+      "Detail view: Right-side slide-over Panel (Sheet) containing the problem details and the follow-up timeline",
+      "Side navigation rail for main app sections (Dashboard, Problemas, Relatórios)"
+    ]
+  },
+  "components": {
+    "buttons": "Flat design, rounded-sm, high contrast text. Primary CTA uses brand green (#384C37).",
+    "cards": "bg-white, border border-[#E5E3DB], no shadow, p-6. Rigid and structured.",
+    "inputs": "bg-white, border-[#E5E3DB], rounded-sm, focus:ring-1 focus:ring-[#384C37] focus:border-[#384C37].",
+    "tables": "Dense rows, left-aligned, text-sm. Hover rows with bg-[#F0EFEB]. Header is text-xs uppercase.",
+    "timeline": "Vertical line in #E5E3DB. Timeline nodes use status colors. Dense layout."
+  },
+  "icons": "Phosphor Icons (@phosphor-icons/react) - Regular or Bold weight for clarity",
+  "accessibility": [
+    "data-testid on all interactive elements (buttons, inputs, links, rows, etc.)",
+    "High contrast ratios for all text."
+  ],
+  "instructions_to_main_agent": [
+    "Install fonts: Chivo (headings) and IBM Plex Sans (body).",
+    "Install Phosphor Icons: yarn add @phosphor-icons/react",
+    "DO NOT use generic purple/blue gradients or generic SaaS rounded cards. Follow the flat, earthy, structured design.",
+    "Build the dashboard using pure Tailwind HTML for layout and customized Shadcn components for complex interactions (Tables, Select, Sheet, Dialog).",
+    "Ensure all Shadcn components (Cards, Buttons, Inputs) have their border-radius reduced to `rounded-sm` or `rounded-none`, and remove box-shadows.",
+    "Use Shadcn Sheet for the 'Detalhe do Problema' to slide in from the right when clicking a table row.",
+    "The timeline in the Sheet should allow adding a new 'Ponto de Situação' (Textarea + Status change dropdown).",
+    "All interface text MUST be in Portuguese (PT-PT) as requested: 'Problemas Abertos', 'Farmácia', 'Consultor', 'Tipologia' (TFO, Simples, Encomendas, Preço Plataforma), 'Data Prevista', etc."
+  ],
+  "image_urls": {}
+}
