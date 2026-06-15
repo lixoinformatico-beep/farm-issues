@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { formatApiError } from "@/lib/api";
-import { Pill, Lock, EnvelopeSimple } from "@phosphor-icons/react";
+import { Lock, EnvelopeSimple } from "@phosphor-icons/react";
+import logo from "@/assets/logo.png";
 
 export default function LoginPage() {
   const { user, login } = useAuth();
@@ -34,9 +35,7 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12"
            style={{ backgroundColor: "#384C37", color: "#FFFFFF" }}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 border-2 border-white/80 flex items-center justify-center">
-            <Pill size={20} weight="bold" />
-          </div>
+          <img src={logo} alt="PremiumFarma" className="w-10 h-10 object-contain shrink-0 bg-white rounded-sm p-0.5" />
           <span className="label-mini" style={{ color: "#E8E5DA", letterSpacing: "0.25em" }}>
             Gestão de Problemas
           </span>
@@ -65,9 +64,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-10">
-            <div className="w-9 h-9 border-2 border-[#384C37] flex items-center justify-center" style={{ color: "#384C37" }}>
-              <Pill size={18} weight="bold" />
-            </div>
+            <img src={logo} alt="PremiumFarma" className="w-9 h-9 object-contain shrink-0" />
             <span className="label-mini">Gestão de Problemas</span>
           </div>
 

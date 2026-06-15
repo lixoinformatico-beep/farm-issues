@@ -1,8 +1,9 @@
 import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { ChartPieSlice, ListChecks, Pill, SignOut, FileArrowDown, UsersThree } from "@phosphor-icons/react";
+import { ChartPieSlice, ListChecks, SignOut, FileArrowDown, UsersThree } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/sonner";
+import logo from "@/assets/logo.png";
 
 const NavItem = ({ to, icon: Icon, label, testid }) => (
   <NavLink
@@ -37,9 +38,7 @@ export default function Layout() {
       <aside className="w-60 border-r border-[#E5E3DB] bg-white flex flex-col" data-testid="sidebar">
         <div className="px-5 py-5 border-b border-[#E5E3DB]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 border-2 border-[#384C37] flex items-center justify-center" style={{ color: "#384C37" }}>
-              <Pill size={16} weight="bold" />
-            </div>
+            <img src={logo} alt="PremiumFarma" className="w-9 h-9 object-contain shrink-0" />
             <div>
               <p className="text-sm font-semibold tracking-tight text-[#1E231F] leading-none" style={{ fontFamily: "Chivo" }}>
                 Farma·Issues
