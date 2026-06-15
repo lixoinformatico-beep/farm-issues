@@ -4,54 +4,62 @@
 > Quero criar uma aplicação que registe problemas levantados pelas farmácias e registadas pelos consultores, onde eu posso criar pontos de situação e acompanhar a resolução do problema.
 
 ## Personas
-- **Consultor**: regista problemas reportados pelas farmácias e cria pontos de situação.
-- **Administrador**: vê dashboard, exporta relatórios, gere todos os problemas.
+- **Consultor**: regista problemas reportados pelas farmácias e cria pontos de situação. Edita os próprios problemas.
+- **Administrador**: gere utilizadores, vê dashboard, exporta relatórios, edita/elimina qualquer problema.
 
-## Decisões do utilizador
-- Autenticação: JWT simples (email + password) com httpOnly cookies.
-- Campos de problema: Farmácia, Laboratório, Consultor, Descrição, Tipologia (TFO, Simples, Encomendas, Preço Plataforma), Prioridade, Estado, Data prevista, Atribuído a.
-- Pontos de situação: texto + data + autor + (opcional) mudança de estado (Aberto → Em Curso → Resolvido).
-- Funcionalidades extra: dashboard com estatísticas, filtros, pesquisa, exportação CSV.
-- Idioma: Português (PT-PT).
-- Tema visual: paleta orgânica earthy (Forest Green / Bone White) + Chivo + IBM Plex Sans (design_agent archetype 1).
+## Stack
+- **Backend**: FastAPI + Motor (MongoDB async) + JWT (PyJWT) + bcrypt + Resend + Emergent Object Storage.
+- **Frontend**: React 19 + React Router 7 + Tailwind + shadcn/ui + Phosphor + Recharts.
 
-## Arquitetura
-- Backend: FastAPI + Motor (MongoDB async) + JWT (PyJWT) + bcrypt.
-- Frontend: React 19 + React Router 7 + Tailwind + shadcn/ui + Phosphor Icons + Recharts.
-- Endpoints `/api/*`:
-  - `POST /api/auth/login|logout|register`, `GET /api/auth/me`
-  - `GET/POST/PATCH/DELETE /api/problemas`
-  - `POST /api/problemas/{id}/followups`
-  - `GET /api/stats` (KPIs + agregados)
-  - `GET /api/problemas/export/csv`
+## Endpoints `/api/*`
+- Auth: `POST /auth/login|logout`, `GET /auth/me`
+- Users (admin para escrita): `GET /users`, `POST /users`, `PATCH /users/{id}`, `DELETE /users/{id}`
+- Problemas: `GET/POST /problemas`, `GET/PATCH/DELETE /problemas/{id}` (DELETE só admin; PATCH só criador ou admin)
+- Follow-ups: `POST /problemas/{id}/followups`
+- Anexos: `POST /problemas/{id}/attachments` (multipart), `GET /attachments/{id}/download`, `DELETE /attachments/{id}`
+- Stats: `GET /stats` (KPIs + agregados)
+- Export: `GET /problemas/export/csv`
 
-## Implementado (15/06/2026) — MVP completo
-- ✅ Login JWT (httpOnly cookies) + seed admin (`admin@farmacias.pt` / `admin123`)
-- ✅ Layout com sidebar (Dashboard, Problemas, Relatórios) + logout
-- ✅ Dashboard: 4 KPIs + gráfico pie (Tipologia) + gráfico barras (Top farmácias) + tabela recentes
-- ✅ Listagem de problemas com tabela densa, pesquisa, filtros (estado, tipologia, farmácia)
-- ✅ Criação de problemas (Sheet lateral)
-- ✅ Detalhe do problema (Sheet lateral) com timeline de pontos de situação, mudanças de estado, ações rápidas
-- ✅ Adicionar ponto de situação com mudança opcional de estado
+## Implementado
+
+### v1.0 — MVP (15/06/2026)
+- ✅ Login JWT + seed admin (admin@farmacias.pt / admin123)
+- ✅ Dashboard com KPIs + gráficos (Recharts)
+- ✅ Lista de problemas com tabela densa, pesquisa, filtros
+- ✅ Criação/edição via Sheet lateral
+- ✅ Timeline de pontos de situação com mudança de estado
 - ✅ Exportação CSV (separador `;`)
-- ✅ Página Relatórios com tabela de taxa de resolução por farmácia
-- ✅ Testing agent: 100% backend (16/16), 100% frontend
+- ✅ Página Relatórios (taxa de resolução)
+- ✅ Testing: 100% backend (16/16), 100% frontend
 
-## Backlog (próximos passos sugeridos)
+### v1.1 — Gestão avançada (15/06/2026)
+- ✅ **Gestão de Utilizadores** (`/utilizadores`, admin-only) com criar/eliminar
+- ✅ **Atribuição** via dropdown de utilizadores no Sheet criar/editar
+- ✅ **Notificações por email** (Resend `onboarding@resend.dev`) em:
+  - Atribuição (notifica o utilizador atribuído)
+  - Novo ponto de situação (notifica criador + atribuído, exceto autor)
+  - Problema resolvido (notifica criador + atribuído)
+- ✅ **Permissões por role**:
+  - Admin: tudo (CRUD utilizadores, eliminar problemas)
+  - Consultor: ver tudo, criar problemas/follow-ups/anexos, editar/resolver os seus
+- ✅ **Audit log** visível em tab "Histórico" (criou, atualizou, atribuiu, ponto_situacao, anexo_adicionado, anexo_removido)
+- ✅ **Anexos** via Emergent Object Storage (PDF, imagens, docs até 10MB) com upload/download/eliminar
+- ✅ Detail sheet reorganizado em 3 tabs: Pontos de situação | Anexos | Histórico
+- ✅ Testing: 100% backend (32/32), 100% frontend
+
+## Backlog
 ### P1
-- Registo de utilizadores na UI (atualmente só admin seeded; endpoint existe)
-- Atribuir problema a consultor via dropdown (lista de utilizadores)
-- Notificações por email (Resend) quando problema é atribuído ou resolvido
-- Anexos a problemas (object storage)
+- Replace native date input com shadcn Calendar + format dd/mm/yyyy
+- Domínio próprio verificado no Resend (em vez do sandbox)
+- Brute-force lockout em /api/auth/login
 
 ### P2
-- Permissões por role (admin vs consultor) — admin pode apagar, consultor só cria/atualiza os seus
-- Histórico/audit log de alterações
-- Lockout após 5 logins falhados
-- Dashboard com gráfico temporal (problemas abertos vs resolvidos por mês)
+- Histórico/audit log gráfico no Dashboard (atividade temporal)
 - Cookie secure=True em produção
-- Adicionar `DialogDescription` para silenciar warning a11y do Radix
+- Permitir editar campos do problema via Sheet (não só estado/atribuído)
+- Anexos directamente em follow-ups (não só em problemas)
 
 ### P3
-- App móvel (PWA) para consultores no terreno
+- App móvel (PWA)
 - Importação CSV em massa
+- Filtros avançados: "atribuído a mim", intervalo de datas
