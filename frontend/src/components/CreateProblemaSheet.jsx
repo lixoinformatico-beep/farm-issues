@@ -40,6 +40,10 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.consultor) {
+      toast.error("Selecione um consultor");
+      return;
+    }
     setLoading(true);
     try {
       const payload = { ...form };
@@ -89,9 +93,19 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Consultor" required>
-              <input data-testid="form-consultor" required className={inputCls}
-                value={form.consultor} onChange={(e) => update("consultor", e.target.value)}
-                placeholder="Nome do consultor" />
+              <Select value={form.consultor} onValueChange={(v) => update("consultor", v)}>
+                <SelectTrigger data-testid="form-consultor" className={selectTriggerCls}>
+                  <SelectValue placeholder="Selecionar consultor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.length === 0 && (
+                    <div className="px-2 py-2 text-xs text-[#8A938B]">Nenhum utilizador disponível</div>
+                  )}
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.name}>{u.name} · {u.email}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Atribuir a">
               <Select value={form.atribuido_a_id} onValueChange={(v) => update("atribuido_a_id", v)}>

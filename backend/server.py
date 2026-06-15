@@ -99,7 +99,7 @@ async def require_admin(user: dict = Depends(get_current_user)) -> dict:
 
 
 # --- Models ---
-TIPOLOGIA = Literal["TFO", "Simples", "Encomendas", "Preço Plataforma"]
+TIPOLOGIA = Literal["TFO", "Simplex", "Encomendas", "Preço Plataforma", "Outros"]
 PRIORIDADE = Literal["Baixa", "Media", "Alta", "Critica"]
 ESTADO = Literal["Aberto", "Em Curso", "Resolvido"]
 ROLE = Literal["admin", "consultor"]
@@ -608,6 +608,11 @@ async def startup():
         init_storage()
     except Exception as e:
         logger.warning(f"Storage init falhou na startup: {e}")
+
+    # Migrate old "Simples" tipologia to "Simplex"
+    res = await db.problemas.update_many({"tipologia": "Simples"}, {"$set": {"tipologia": "Simplex"}})
+    if res.modified_count:
+        logger.info(f"Migrated {res.modified_count} problemas: Simples -> Simplex")
 
     admin_email = os.environ.get("ADMIN_EMAIL", "admin@farmacias.pt").lower()
     admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
