@@ -36,6 +36,8 @@ export default function ProblemasPage() {
       if (laboratorio) params.laboratorio = laboratorio;
       const { data } = await api.get("/problemas", { params });
       setItems(data);
+    } catch {
+      // ignore: 401 já está a redirecionar; outros erros mostrados via interceptor
     } finally {
       setLoading(false);
     }

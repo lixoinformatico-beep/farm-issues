@@ -7,7 +7,7 @@ export default function Relatorios() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    api.get("/stats").then((r) => setStats(r.data));
+    api.get("/stats").then((r) => setStats(r.data)).catch(() => {});
   }, []);
 
   const handleExport = async () => {

@@ -27,6 +27,7 @@ export default function Dashboard() {
         setStats(s.data);
         setRecent(p.data.slice(0, 6));
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 

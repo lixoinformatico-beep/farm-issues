@@ -19,9 +19,11 @@ api.interceptors.response.use(
     const url = error.config?.url || "";
     if (status === 401 && !SILENT_401.some((p) => url.includes(p))) {
       // Sessão expirou ou foi invalidada
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.replace("/login");
       }
+      // Devolver promessa pendente para evitar unhandled rejections enquanto navega
+      return new Promise(() => {});
     }
     return Promise.reject(error);
   },
