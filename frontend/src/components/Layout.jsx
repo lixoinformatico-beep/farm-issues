@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { ChartPieSlice, ListChecks, Pill, SignOut, FileArrowDown } from "@phosphor-icons/react";
+import { ChartPieSlice, ListChecks, Pill, SignOut, FileArrowDown, UsersThree } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/sonner";
 
 const NavItem = ({ to, icon: Icon, label, testid }) => (
@@ -54,6 +54,9 @@ export default function Layout() {
           <NavItem to="/" icon={ChartPieSlice} label="Dashboard" testid="nav-dashboard" />
           <NavItem to="/problemas" icon={ListChecks} label="Problemas" testid="nav-problemas" />
           <NavItem to="/relatorios" icon={FileArrowDown} label="Relatórios" testid="nav-relatorios" />
+          {user?.role === "admin" && (
+            <NavItem to="/utilizadores" icon={UsersThree} label="Utilizadores" testid="nav-utilizadores" />
+          )}
         </nav>
 
         <div className="border-t border-[#E5E3DB] p-4">
@@ -64,7 +67,9 @@ export default function Layout() {
             </div>
             <div className="min-w-0">
               <p className="text-sm text-[#1E231F] truncate font-medium" data-testid="user-name">{user?.name}</p>
-              <p className="text-[11px] text-[#8A938B] truncate">{user?.email}</p>
+              <p className="text-[11px] text-[#8A938B] truncate">
+                {user?.role === "admin" ? "Admin" : "Consultor"} · {user?.email}
+              </p>
             </div>
           </div>
           <button

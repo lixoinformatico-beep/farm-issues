@@ -170,6 +170,7 @@ export default function ProblemasPage() {
                 <th className="px-5 py-3">Farmácia</th>
                 <th className="px-5 py-3">Laboratório</th>
                 <th className="px-5 py-3">Consultor</th>
+                <th className="px-5 py-3">Atribuído</th>
                 <th className="px-5 py-3">Tipologia</th>
                 <th className="px-5 py-3">Prioridade</th>
                 <th className="px-5 py-3">Estado</th>
@@ -188,6 +189,7 @@ export default function ProblemasPage() {
                   <td className="px-5 py-3 text-[#1E231F] font-medium">{p.farmacia}</td>
                   <td className="px-5 py-3 text-[#343A35]">{p.laboratorio}</td>
                   <td className="px-5 py-3 text-[#343A35]">{p.consultor}</td>
+                  <td className="px-5 py-3 text-[#343A35]">{p.atribuido_a_name || <span className="text-[#8A938B]">—</span>}</td>
                   <td className="px-5 py-3 text-[#343A35]">{p.tipologia}</td>
                   <td className="px-5 py-3"><PriorityDot prioridade={p.prioridade} /></td>
                   <td className="px-5 py-3"><StatusPill estado={p.estado} /></td>

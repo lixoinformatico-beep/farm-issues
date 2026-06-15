@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import ProblemasPage from "@/pages/ProblemasPage";
 import Relatorios from "@/pages/Relatorios";
+import UtilizadoresPage from "@/pages/UtilizadoresPage";
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -19,6 +20,12 @@ const ProtectedRoute = ({ children }) => {
   }
   if (user === false) return <Navigate to="/login" replace />;
   return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (user && user.role === "admin") return children;
+  return <Navigate to="/" replace />;
 };
 
 function App() {
@@ -38,6 +45,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/problemas" element={<ProblemasPage />} />
               <Route path="/relatorios" element={<Relatorios />} />
+              <Route path="/utilizadores" element={<AdminRoute><UtilizadoresPage /></AdminRoute>} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

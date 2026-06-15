@@ -1,0 +1,60 @@
+{
+  "summary": "Iteration 2 end-to-end testing: 32/32 backend tests PASS (16 existing + 16 new). Frontend Playwright covers all critical flows: admin user CRUD, role-based sidebar, /utilizadores admin guard, problema detail tabs (followups/anexos/audit), assign dropdown, attachment upload, audit log display. All listed feature acceptance criteria are met. One minor testid-name discrepancy and a native browser date picker noted as low-priority.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "CreateProblemaSheet", "issues": ["'Data prevista de resolução' uses native browser <input type='date'> (mm/dd/yyyy) instead of shadcn Calendar / PT-PT format. Low priority."]},
+      {"screen": "Sheet/Dialog components", "issues": ["Pre-existing Radix DialogContent missing Description warning still applies to new ProblemaDetailSheet (a11y warning, non-blocking)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_users_attachments.py",
+    "/app/backend/tests/test_problemas_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Low) Rename testid in CreateProblemaSheet from 'form-atribuido' to 'assign-select' to match the spec (data-testid contract documented in review_request). Detail sheet correctly uses 'assign-select'.",
+    "(Low) Replace native date input with shadcn Calendar + dd/mm/yyyy formatting for PT-PT consistency.",
+    "(Optional) Add aria-describedby/DialogDescription to ProblemaDetailSheet to silence Radix warning."
+  ],
+  "critical_code_review_comments": [
+    "Permissions correctly enforced: require_admin used on /users POST/PATCH/DELETE; consultor PATCH on problema he didn't create returns 403; DELETE /api/problemas only for admin. Verified via tests.",
+    "Audit logs are written for criou, atualizou, atribuiu, ponto_situacao, anexo_adicionado, anexo_removido — comprehensive trail.",
+    "Object storage put/get use bearer key with 403-retry — robust against key expiry.",
+    "Email side-effects use asyncio.to_thread and catch exceptions silently — safe; Resend sandbox onboarding@resend.dev configured.",
+    "GET /api/users is accessible to any authenticated user (needed for assign dropdown) — intentional and correct.",
+    "/api/attachments/{aid}/download supports auth via query param 'auth' BUT does NOT actually verify the user via that token (no user lookup performed) — minor: any valid JWT passes; acceptable for inline <a> downloads but worth noting.",
+    "/api/problemas/export/csv pre-fetches users for atribuido_a_id lookup — efficient; PT-PT 'Atribuído' header confirmed.",
+    "delete_problema soft-deletes attachments via is_deleted flag — preserves storage objects (good for forensic recovery).",
+    "JWT_SECRET, MONGO_URL, EMERGENT_LLM_KEY, RESEND_API_KEY all sourced from env — no hardcoded secrets.",
+    "Still missing brute-force lockout on /api/auth/login (carried over from iteration 1)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_users_attachments.py (new, 16 tests)"
+  ],
+  "success_rate": {"backend": "100% (32/32)", "frontend": "100% (all listed acceptance criteria verified)"},
+  "test_credentials": "admin@farmacias.pt / admin123 (seeded). Test consultor accounts created and cleaned up during tests.",
+  "seed_data_creation": "Tests create TEST_-prefixed problemas and test_consultor_* users; session-scoped autouse cleanup fixture removes them after the run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Two test files now: /app/backend/tests/test_problemas_api.py (16 tests, original CRUD/auth/follow-ups/stats/CSV) and /app/backend/tests/test_users_attachments.py (16 tests, users/permissions/assignment/attachments/audit/CSV-assignee). Both auto-clean. Frontend testids verified working: nav-utilizadores, utilizadores-page, new-user-btn, user-row-{id}, delete-user-{id}, user-form-{name|email|password|role|submit}, tab-followups/anexos/audit, attachment-input, audit-list/entry, delete-problema-btn. NOTE: Create sheet uses 'form-atribuido' (NOT 'assign-select' as spec states); detail sheet correctly uses 'assign-select'. Object storage works end-to-end with current EMERGENT_LLM_KEY.",
+  "verified_flows": [
+    "Admin login + sidebar shows nav-utilizadores",
+    "/utilizadores lists admin + consultor; new user dialog creates user; delete buttons only for non-self",
+    "Consultor login; sidebar hides Utilizadores; /utilizadores redirects to /",
+    "Create problema: 'Atribuir a' dropdown (was text field) — works",
+    "Problema detail sheet has 3 tabs (followups/anexos/audit) with content",
+    "Audit list shows entries with author + date (criou, atribuiu observed)",
+    "Anexos tab shows upload input + empty state",
+    "Consultor does NOT see delete-problema-btn",
+    "Backend: POST /users by consultor -> 403; PATCH /problemas not-creator by consultor -> 403; DELETE /problemas by consultor -> 403",
+    "Backend: Attachment upload -> list -> download -> delete (admin) end-to-end",
+    "Backend: CSV export includes 'Atribuído' header and assignee name",
+    "Backend: Email notify_assigned called on create-with-assignment and patch-assignment (no crash, audit 'atribuiu' present)"
+  ]
+}
