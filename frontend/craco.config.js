@@ -55,6 +55,13 @@ let webpackConfig = {
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);
       }
+
+      // Remove fork-ts-checker (projeto e JavaScript puro, sem TypeScript).
+      // O seu ajv-keywords@3 quebra o build no Vercel; nao e necessario aqui.
+      webpackConfig.plugins = (webpackConfig.plugins || []).filter(
+        (plugin) => plugin && plugin.constructor && plugin.constructor.name !== "ForkTsCheckerWebpackPlugin"
+      );
+
       return webpackConfig;
     },
   },
