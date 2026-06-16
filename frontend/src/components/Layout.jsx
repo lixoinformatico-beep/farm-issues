@@ -67,7 +67,7 @@ export default function Layout() {
             <div className="min-w-0">
               <p className="text-sm text-[#1E231F] truncate font-medium" data-testid="user-name">{user?.name}</p>
               <p className="text-[11px] text-[#8A938B] truncate">
-                {user?.role === "admin" ? "Admin" : "Consultor"} · {user?.email}
+                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ""} · {user?.email}
               </p>
             </div>
           </div>

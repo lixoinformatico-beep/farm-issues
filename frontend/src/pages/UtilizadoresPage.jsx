@@ -117,7 +117,7 @@ export default function UtilizadoresPage() {
                             ? { backgroundColor: "#EAF0EC", color: "#384C37", borderColor: "#C7D8CE" }
                             : { backgroundColor: "#F0EFEB", color: "#5C665D", borderColor: "#E5E3DB" }}>
                       {u.role === "admin" ? <Crown size={11} /> : <UserIcon size={11} />}
-                      {u.role === "admin" ? "Admin" : "Consultor"}
+                      {u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : ""}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-[#5C665D] mono text-xs">
@@ -174,6 +174,7 @@ export default function UtilizadoresPage() {
                 <SelectTrigger data-testid="user-form-role" className="h-9 bg-white border-[#E5E3DB] rounded-sm text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="consultor">Consultor</SelectItem>
+                  <SelectItem value="marketing">Marketing</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>

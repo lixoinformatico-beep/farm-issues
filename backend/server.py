@@ -108,7 +108,7 @@ async def require_admin(user: dict = Depends(get_current_user)) -> dict:
 TIPOLOGIA = Literal["TFO", "Simplex", "Encomendas", "Preço Plataforma", "Outros"]
 PRIORIDADE = Literal["Baixa", "Media", "Alta", "Critica"]
 ESTADO = Literal["Aberto", "Em Curso", "Resolvido"]
-ROLE = Literal["admin", "consultor"]
+ROLE = Literal["admin", "consultor", "marketing"]
 
 
 class LoginReq(BaseModel):
