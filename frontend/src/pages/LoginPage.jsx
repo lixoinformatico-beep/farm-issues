@@ -8,7 +8,7 @@ import logo from "@/assets/logo.png";
 export default function LoginPage() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@farmacias.pt");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export default function LoginPage() {
         <div className="flex items-center gap-3">
           <img src={logo} alt="PremiumFarma" className="w-10 h-10 object-contain shrink-0 bg-white rounded-sm p-0.5" />
           <span className="label-mini" style={{ color: "#E8E5DA", letterSpacing: "0.25em" }}>
-            Gestão de Problemas
+            Gestão de Pedidos de Apoio
           </span>
         </div>
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
             <span className="italic font-light">Documentar.</span>
           </h1>
           <p className="text-base max-w-md" style={{ color: "#CFD3CB" }}>
-            Plataforma interna para registo e acompanhamento de problemas
+            Plataforma interna para registo e acompanhamento de pedidos de apoio
             levantados pelas farmácias, em colaboração com os consultores.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-10">
             <img src={logo} alt="PremiumFarma" className="w-9 h-9 object-contain shrink-0" />
-            <span className="label-mini">Gestão de Problemas</span>
+            <span className="label-mini">Gestão de Pedidos de Apoio</span>
           </div>
 
           <div className="mb-8">
@@ -129,11 +129,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-10 pt-6 border-t border-[#E5E3DB]">
-            <p className="text-xs text-[#8A938B]">
-              Conta demo: <span className="mono text-[#1E231F]">admin@farmacias.pt</span> / <span className="mono">admin123</span>
-            </p>
-          </div>
         </div>
       </div>
     </div>

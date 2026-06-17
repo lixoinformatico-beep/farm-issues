@@ -75,7 +75,7 @@ export default function ProblemasPage() {
       <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
         <div>
           <p className="label-mini mb-1">Registo</p>
-          <h1 className="text-3xl font-medium tracking-tight">Problemas</h1>
+          <h1 className="text-3xl font-medium tracking-tight">Pedidos de Apoio</h1>
           <p className="text-sm text-[#5C665D] mt-1">
             {stats.total} resultado{stats.total !== 1 && "s"} ·{" "}
             <span className="text-[#B84A39]">{stats.abertos} abertos</span> ·{" "}
@@ -97,7 +97,7 @@ export default function ProblemasPage() {
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-sm transition-colors"
             style={{ backgroundColor: "#384C37", color: "#FFFFFF" }}
           >
-            <Plus size={16} weight="bold" /> Novo problema
+            <Plus size={16} weight="bold" /> Novo pedido de apoio
           </button>
         </div>
       </div>
@@ -156,10 +156,10 @@ export default function ProblemasPage() {
       {/* Table */}
       <div className="surface-card overflow-hidden">
         {loading ? (
-          <p className="py-16 text-center text-sm text-[#8A938B]">A carregar problemas...</p>
+          <p className="py-16 text-center text-sm text-[#8A938B]">A carregar pedidos de apoio...</p>
         ) : items.length === 0 ? (
           <div className="py-16 text-center" data-testid="empty-state">
-            <p className="text-sm text-[#5C665D]">Nenhum problema encontrado.</p>
+            <p className="text-sm text-[#5C665D]">Nenhum pedido de apoio encontrado.</p>
             <button onClick={() => setCreateOpen(true)}
               className="mt-3 inline-flex items-center gap-2 text-sm text-[#384C37] hover:underline">
               <Plus size={14} /> Criar o primeiro

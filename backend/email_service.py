@@ -108,3 +108,22 @@ async def notify_resolved(to_emails: list, problema: dict, resolver_name: str):
     for email in to_emails:
         results.append(await _send(email, f"[Farma·Issues] {title}: {problema.get('farmacia','')}", _wrap(title, body)))
     return results
+
+
+async def notify_status_change(to_emails: list, problema: dict, old_state: str, new_state: str, by_name: str):
+    title = "Estado atualizado"
+    body = f"""
+<p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#343A35;">
+  O estado do pedido de apoio da <strong>{problema.get('farmacia','')}</strong> foi atualizado por {by_name}.
+</p>
+<p style="margin:8px 0;font-size:13px;color:#384C37;"><strong>Mudança de estado:</strong> {old_state} &rarr; {new_state}</p>
+<table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-top:1px solid #E5E3DB;border-bottom:1px solid #E5E3DB;margin:12px 0;">
+  {_row("Farmácia", problema.get("farmacia"))}
+  {_row("Laboratório", problema.get("laboratorio"))}
+  {_row("Tipologia", problema.get("tipologia"))}
+</table>
+"""
+    results = []
+    for email in to_emails:
+        results.append(await _send(email, f"[Farma·Issues] {title}: {problema.get('farmacia','')}", _wrap(title, body)))
+    return results

@@ -51,7 +51,7 @@ export default function Layout() {
         <nav className="py-4 flex-1">
           <p className="label-mini px-4 mb-2">Navegação</p>
           <NavItem to="/" icon={ChartPieSlice} label="Dashboard" testid="nav-dashboard" />
-          <NavItem to="/problemas" icon={ListChecks} label="Problemas" testid="nav-problemas" />
+          <NavItem to="/problemas" icon={ListChecks} label="Pedidos de Apoio" testid="nav-problemas" />
           <NavItem to="/relatorios" icon={FileArrowDown} label="Relatórios" testid="nav-relatorios" />
           {user?.role === "admin" && (
             <NavItem to="/utilizadores" icon={UsersThree} label="Utilizadores" testid="nav-utilizadores" />

@@ -18,7 +18,7 @@ from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Literal
 
-from email_service import notify_assigned, notify_followup, notify_resolved
+from email_service import notify_assigned, notify_followup, notify_resolved, notify_status_change
 from storage_service import init_storage, put_object, get_object, APP_NAME
 
 # --- Config ---
@@ -297,6 +297,13 @@ async def create_problema(req: ProblemaCreate, user: dict = Depends(get_current_
     return _clean(await _attach_user_info(doc))
 
 
+def _visibility_filter(user: dict) -> dict:
+    """Non-admins only see problems they created or that are assigned to them."""
+    if user.get("role") == "admin":
+        return {}
+    return {"$or": [{"criado_por_id": user["id"]}, {"atribuido_a_id": user["id"]}]}
+
+
 @api_router.get("/problemas")
 async def list_problemas(
     estado: Optional[str] = None,
@@ -306,7 +313,7 @@ async def list_problemas(
     tipologia: Optional[str] = None,
     atribuido_a_id: Optional[str] = None,
     q: Optional[str] = None,
-    _: dict = Depends(get_current_user),
+    user: dict = Depends(get_current_user),
 ):
     query = {}
     if estado:
@@ -328,6 +335,14 @@ async def list_problemas(
             {"laboratorio": {"$regex": q, "$options": "i"}},
             {"consultor": {"$regex": q, "$options": "i"}},
         ]
+    vis = _visibility_filter(user)
+    if vis:
+        existing_or = query.pop("$or", None)
+        clauses = query.pop("$and", []) + [vis]
+        if existing_or is not None:
+            clauses.append({"$or": existing_or})
+        query["$and"] = clauses
+
     items = await db.problemas.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
     for it in items:
         await _attach_user_info(it)
@@ -335,10 +350,12 @@ async def list_problemas(
 
 
 @api_router.get("/problemas/{pid}")
-async def get_problema(pid: str, _: dict = Depends(get_current_user)):
+async def get_problema(pid: str, user: dict = Depends(get_current_user)):
     p = await db.problemas.find_one({"id": pid}, {"_id": 0})
     if not p:
         raise HTTPException(404, "Problema não encontrado")
+    if user.get("role") != "admin" and user["id"] not in (p.get("criado_por_id"), p.get("atribuido_a_id")):
+        raise HTTPException(403, "Sem acesso a este pedido de apoio")
     await _attach_user_info(p)
     p["follow_ups"] = await db.followups.find({"problema_id": pid}, {"_id": 0}).sort("created_at", 1).to_list(1000)
     p["attachments"] = await db.attachments.find(
@@ -394,6 +411,14 @@ async def update_problema(pid: str, req: ProblemaUpdate, user: dict = Depends(ge
         recipients = await _collect_emails(new_doc, exclude_user_id=user["id"])
         if recipients:
             await notify_resolved(recipients, new_doc, user["name"])
+    # Any other status change
+    elif "estado" in changes:
+        recipients = await _collect_emails(new_doc, exclude_user_id=user["id"])
+        if recipients:
+            await notify_status_change(
+                recipients, new_doc,
+                changes["estado"]["de"], changes["estado"]["para"], user["name"],
+            )
 
     return await _attach_user_info(new_doc)
 
@@ -540,11 +565,13 @@ async def delete_attachment(aid: str, user: dict = Depends(get_current_user)):
 
 # --- Dashboard Stats ---
 @api_router.get("/stats")
-async def stats(_: dict = Depends(get_current_user)):
-    total = await db.problemas.count_documents({})
-    abertos = await db.problemas.count_documents({"estado": "Aberto"})
-    em_curso = await db.problemas.count_documents({"estado": "Em Curso"})
-    resolvidos = await db.problemas.count_documents({"estado": "Resolvido"})
+async def stats(user: dict = Depends(get_current_user)):
+    base = _visibility_filter(user)
+    match = [{"$match": base}] if base else []
+    total = await db.problemas.count_documents(base)
+    abertos = await db.problemas.count_documents({**base, "estado": "Aberto"})
+    em_curso = await db.problemas.count_documents({**base, "estado": "Em Curso"})
+    resolvidos = await db.problemas.count_documents({**base, "estado": "Resolvido"})
 
     pipeline_farm = [
         {"$group": {"_id": "$farmacia", "total": {"$sum": 1},
@@ -553,16 +580,16 @@ async def stats(_: dict = Depends(get_current_user)):
                     "resolvidos": {"$sum": {"$cond": [{"$eq": ["$estado", "Resolvido"]}, 1, 0]}}}},
         {"$sort": {"total": -1}}, {"$limit": 10}
     ]
-    by_farm = await db.problemas.aggregate(pipeline_farm).to_list(100)
+    by_farm = await db.problemas.aggregate(match + pipeline_farm).to_list(100)
     by_farmacia = [{"farmacia": f["_id"], "total": f["total"], "abertos": f["abertos"],
                     "em_curso": f["em_curso"], "resolvidos": f["resolvidos"]} for f in by_farm]
 
     pipeline_tip = [{"$group": {"_id": "$tipologia", "total": {"$sum": 1}}}, {"$sort": {"total": -1}}]
-    by_tip = await db.problemas.aggregate(pipeline_tip).to_list(100)
+    by_tip = await db.problemas.aggregate(match + pipeline_tip).to_list(100)
     by_tipologia = [{"tipologia": t["_id"], "total": t["total"]} for t in by_tip]
 
     pipeline_pri = [{"$group": {"_id": "$prioridade", "total": {"$sum": 1}}}]
-    by_pri = await db.problemas.aggregate(pipeline_pri).to_list(100)
+    by_pri = await db.problemas.aggregate(match + pipeline_pri).to_list(100)
     by_prioridade = [{"prioridade": t["_id"], "total": t["total"]} for t in by_pri]
 
     return {
@@ -573,8 +600,8 @@ async def stats(_: dict = Depends(get_current_user)):
 
 # --- Export CSV ---
 @api_router.get("/problemas/export/csv")
-async def export_csv(_: dict = Depends(get_current_user)):
-    items = await db.problemas.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+async def export_csv(user: dict = Depends(get_current_user)):
+    items = await db.problemas.find(_visibility_filter(user), {"_id": 0}).sort("created_at", -1).to_list(10000)
     buf = io.StringIO()
     writer = csv.writer(buf, delimiter=";")
     writer.writerow(["ID", "Farmácia", "Laboratório", "Consultor", "Tipologia", "Prioridade",
