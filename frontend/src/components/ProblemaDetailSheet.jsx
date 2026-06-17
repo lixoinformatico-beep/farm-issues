@@ -155,6 +155,18 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
     }
   };
 
+  const handleOpenAttachment = async (a) => {
+    try {
+      const res = await api.get(`/attachments/${a.id}/download`, { responseType: "blob" });
+      const blob = new Blob([res.data], { type: a.content_type || "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || "Falha ao abrir o anexo");
+    }
+  };
+
   const handleDeleteProblema = async () => {
     if (!window.confirm("Eliminar este problema definitivamente?")) return;
     try {
@@ -171,7 +183,7 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-2xl bg-[#F4F3EF] border-l border-[#E5E3DB] p-0 overflow-y-auto"
+        className="w-full sm:max-w-3xl bg-[#F4F3EF] border-l border-[#E5E3DB] p-0 overflow-y-auto"
       >
         <SheetHeader className="px-6 py-5 border-b border-[#E5E3DB] bg-white">
           <div className="flex items-start justify-between gap-4">
@@ -381,14 +393,13 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <a
+                          <button
                             data-testid={`download-${a.id}`}
-                            href={`${API}/attachments/${a.id}/download`}
-                            target="_blank" rel="noopener noreferrer"
+                            onClick={() => handleOpenAttachment(a)}
                             className="px-2 py-1 text-xs border border-[#E5E3DB] hover:bg-[#F0EFEB] rounded-sm"
                           >
                             Abrir
-                          </a>
+                          </button>
                           {(isAdmin || a.uploaded_by_id === currentUser?.id) && (
                             <button
                               data-testid={`delete-attachment-${a.id}`}

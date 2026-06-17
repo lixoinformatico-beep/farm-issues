@@ -29,6 +29,7 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
   const [form, setForm] = useState(empty);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     if (open) {
@@ -50,10 +51,28 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
       if (!payload.data_prevista) delete payload.data_prevista;
       if (!payload.atribuido_a_id || payload.atribuido_a_id === UNASSIGNED) delete payload.atribuido_a_id;
       const { data } = await api.post("/problemas", payload);
+      if (files.length > 0) {
+        for (const file of files) {
+          if (file.size > 10 * 1024 * 1024) {
+            toast.error(`"${file.name}" excede 10MB e não foi anexado`);
+            continue;
+          }
+          const fd = new FormData();
+          fd.append("file", file);
+          try {
+            await api.post(`/problemas/${data.id}/attachments`, fd, {
+              headers: { "Content-Type": "multipart/form-data" },
+            });
+          } catch (e) {
+            toast.error(`Falha a anexar "${file.name}"`);
+          }
+        }
+      }
       toast.success("Problema criado com sucesso");
       onCreated?.(data);
       onOpenChange(false);
       setForm(empty);
+      setFiles([]);
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail) || err.message);
     } finally {
@@ -65,7 +84,7 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl bg-[#F4F3EF] border-l border-[#E5E3DB] p-0 overflow-y-auto"
+        className="w-full sm:max-w-2xl bg-[#F4F3EF] border-l border-[#E5E3DB] p-0 overflow-y-auto"
       >
         <SheetHeader className="px-6 py-5 border-b border-[#E5E3DB] bg-white">
           <p className="label-mini">Novo registo</p>
@@ -152,6 +171,21 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
           <Field label="Data prevista de resolução">
             <input data-testid="form-data-prevista" type="date" className={inputCls}
               value={form.data_prevista} onChange={(e) => update("data_prevista", e.target.value)} />
+          </Field>
+
+          <Field label="Anexos">
+            <input
+              data-testid="form-files"
+              type="file"
+              multiple
+              onChange={(e) => setFiles(Array.from(e.target.files))}
+              className="w-full text-sm text-[#384C37] file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border file:border-[#E5E3DB] file:bg-white file:text-sm file:text-[#384C37] hover:file:bg-[#F0EFEB] file:cursor-pointer"
+            />
+            {files.length > 0 && (
+              <p className="text-xs text-[#8A938B] mt-1.5">
+                {files.length} ficheiro(s) selecionado(s): {files.map((f) => f.name).join(", ")}
+              </p>
+            )}
           </Field>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[#E5E3DB]">

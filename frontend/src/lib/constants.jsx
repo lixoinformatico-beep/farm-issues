@@ -1,5 +1,5 @@
 // Shared constants for the application
-export const TIPOLOGIAS = ["TFO", "Simplex", "Encomendas", "Preço Plataforma", "Outros"];
+export const TIPOLOGIAS = ["TFO", "Simplex", "Encomendas", "Preço Plataforma", "Parametrizações", "Outros"];
 export const PRIORIDADES = ["Baixa", "Media", "Alta", "Critica"];
 export const ESTADOS = ["Aberto", "Em Curso", "Resolvido"];
 
@@ -55,3 +55,4 @@ export const PriorityDot = ({ prioridade }) => {
     </span>
   );
 };
+

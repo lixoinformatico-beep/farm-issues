@@ -105,7 +105,7 @@ async def require_admin(user: dict = Depends(get_current_user)) -> dict:
 
 
 # --- Models ---
-TIPOLOGIA = Literal["TFO", "Simplex", "Encomendas", "Preço Plataforma", "Outros"]
+TIPOLOGIA = Literal["TFO", "Simplex", "Encomendas", "Preço Plataforma", "Parametrizações", "Outros"]
 PRIORIDADE = Literal["Baixa", "Media", "Alta", "Critica"]
 ESTADO = Literal["Aberto", "Em Curso", "Resolvido"]
 ROLE = Literal["admin", "consultor", "marketing"]
