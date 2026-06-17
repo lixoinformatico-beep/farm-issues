@@ -10,6 +10,34 @@ import { Plus, MagnifyingGlass, FunnelSimple, FileArrowDown, X } from "@phosphor
 
 const ALL = "__all__";
 
+const PRIORITY_RANK = { Baixa: 0, Media: 1, Alta: 2, Critica: 3 };
+const ESTADO_RANK = { Aberto: 0, "Em Curso": 1, Resolvido: 2 };
+
+const getSortValue = (p, key) => {
+  switch (key) {
+    case "prioridade": return PRIORITY_RANK[p.prioridade] ?? -1;
+    case "estado": return ESTADO_RANK[p.estado] ?? -1;
+    case "atribuido": return (p.atribuido_a_name || "").toLowerCase();
+    case "data_prevista": return p.data_prevista || "";
+    case "created_at": return p.created_at || "";
+    default: return (p[key] || "").toString().toLowerCase();
+  }
+};
+
+const SortableTh = ({ label, colKey, sortKey, sortDir, onSort }) => (
+  <th className="px-5 py-3">
+    <button
+      onClick={() => onSort(colKey)}
+      className="inline-flex items-center gap-1 hover:text-[#384C37] transition-colors"
+    >
+      {label}
+      <span className="text-[9px] w-2 inline-block">
+        {sortKey === colKey ? (sortDir === "asc" ? "▲" : "▼") : ""}
+      </span>
+    </button>
+  </th>
+);
+
 export default function ProblemasPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +50,32 @@ export default function ProblemasPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [selected, setSelected] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
+
+  const handleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const sortedItems = useMemo(() => {
+    if (!sortKey) return items;
+    const arr = [...items];
+    arr.sort((a, b) => {
+      const va = getSortValue(a, sortKey);
+      const vb = getSortValue(b, sortKey);
+      let cmp;
+      if (typeof va === "number" && typeof vb === "number") cmp = va - vb;
+      else cmp = String(va).localeCompare(String(vb), "pt");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [items, sortKey, sortDir]);
 
   const filtersActive = [estado !== ALL, tipologia !== ALL, !!farmacia, !!laboratorio, !!q].filter(Boolean).length;
 
@@ -169,19 +223,19 @@ export default function ProblemasPage() {
           <table className="w-full text-sm" data-testid="problemas-table">
             <thead>
               <tr className="text-left label-mini border-b border-[#E5E3DB]">
-                <th className="px-5 py-3">Farmácia</th>
-                <th className="px-5 py-3">Laboratório</th>
-                <th className="px-5 py-3">Consultor</th>
-                <th className="px-5 py-3">Atribuído</th>
-                <th className="px-5 py-3">Tipologia</th>
-                <th className="px-5 py-3">Prioridade</th>
-                <th className="px-5 py-3">Estado</th>
-                <th className="px-5 py-3">Prevista</th>
-                <th className="px-5 py-3">Criado</th>
+                <SortableTh label="Farmácia" colKey="farmacia" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Laboratório" colKey="laboratorio" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Consultor" colKey="consultor" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Atribuído" colKey="atribuido" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Tipologia" colKey="tipologia" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Prioridade" colKey="prioridade" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Estado" colKey="estado" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Prevista" colKey="data_prevista" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                <SortableTh label="Criado" colKey="created_at" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
               </tr>
             </thead>
             <tbody>
-              {items.map((p) => (
+              {sortedItems.map((p) => (
                 <tr
                   key={p.id}
                   data-testid={`problema-row-${p.id}`}
