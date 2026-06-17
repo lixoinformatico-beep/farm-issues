@@ -49,7 +49,7 @@ def _row(label: str, value) -> str:
 
 
 async def notify_assigned(to_email: str, problema: dict, assigner_name: str):
-    title = "Foi-lhe atribuído um problema"
+    title = "Foi-lhe atribuído um pedido de apoio"
     rows = "".join([
         _row("Farmácia", problema.get("farmacia")),
         _row("Laboratório", problema.get("laboratorio")),
@@ -60,7 +60,7 @@ async def notify_assigned(to_email: str, problema: dict, assigner_name: str):
     ])
     body = f"""
 <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#343A35;">
-  Foi-lhe atribuído um novo problema. Os detalhes encontram-se abaixo.
+  Foi-lhe atribuído um novo pedido de apoio. Os detalhes encontram-se abaixo.
 </p>
 <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-top:1px solid #E5E3DB;border-bottom:1px solid #E5E3DB;margin:12px 0;">{rows}</table>
 <p style="margin:16px 0 4px;color:#8A938B;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;">Descrição</p>
@@ -76,7 +76,7 @@ async def notify_followup(to_emails: list, problema: dict, followup: dict):
         estado_change = f"<p style='margin:8px 0;font-size:13px;color:#384C37;'><strong>Mudança de estado:</strong> {followup['estado_anterior']} → {followup['novo_estado']}</p>"
     body = f"""
 <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#343A35;">
-  Foi adicionado um novo ponto de situação ao problema da <strong>{problema.get('farmacia','')}</strong>.
+  Foi adicionado um novo ponto de situação ao pedido de apoio da <strong>{problema.get('farmacia','')}</strong>.
 </p>
 <p style="margin:0 0 4px;color:#8A938B;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;">Autor</p>
 <p style="margin:0 0 12px;font-size:14px;color:#1E231F;">{followup.get('autor','')}</p>
@@ -91,10 +91,10 @@ async def notify_followup(to_emails: list, problema: dict, followup: dict):
 
 
 async def notify_resolved(to_emails: list, problema: dict, resolver_name: str):
-    title = "Problema resolvido"
+    title = "Pedido de apoio resolvido"
     body = f"""
 <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#343A35;">
-  O problema da <strong>{problema.get('farmacia','')}</strong> foi marcado como
+  O pedido de apoio da <strong>{problema.get('farmacia','')}</strong> foi marcado como
   <span style="color:#426B4F;font-weight:600;">Resolvido</span> por {resolver_name}.
 </p>
 <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-top:1px solid #E5E3DB;border-bottom:1px solid #E5E3DB;margin:12px 0;">
