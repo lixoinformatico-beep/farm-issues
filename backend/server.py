@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Literal
 
 from email_service import notify_assigned, notify_followup, notify_resolved, notify_status_change
+import planner_sync
 from storage_service import init_storage, put_object, get_object, APP_NAME
 
 # --- Config ---
@@ -294,6 +295,12 @@ async def create_problema(req: ProblemaCreate, user: dict = Depends(get_current_
             await notify_assigned(assignee["email"], doc, user["name"])
             await log_audit(pid, user, "atribuiu", {"para": assignee["name"]})
 
+    # Sync to planner (Sprint Board) — cria tarefa e guarda o link
+    task_id = await planner_sync.create_task_for_pedido(doc)
+    if task_id:
+        await db.problemas.update_one({"id": pid}, {"$set": {"sprint_task_id": task_id}})
+        doc["sprint_task_id"] = task_id
+
     return _clean(await _attach_user_info(doc))
 
 
@@ -420,6 +427,10 @@ async def update_problema(pid: str, req: ProblemaUpdate, user: dict = Depends(ge
                 changes["estado"]["de"], changes["estado"]["para"], user["name"],
             )
 
+    # Sync status to planner (Sprint Board)
+    if "estado" in changes and existing.get("sprint_task_id"):
+        await planner_sync.update_task_status(existing["sprint_task_id"], update["estado"])
+
     return await _attach_user_info(new_doc)
 
 
@@ -487,6 +498,10 @@ async def create_followup(pid: str, req: FollowUpCreate, user: dict = Depends(ge
         await notify_followup(recipients, new_doc, fu)
         if estado_changed and req.novo_estado == "Resolvido":
             await notify_resolved(recipients, new_doc, user["name"])
+
+    # Sync status to planner (Sprint Board)
+    if estado_changed and p.get("sprint_task_id"):
+        await planner_sync.update_task_status(p["sprint_task_id"], req.novo_estado)
 
     return fu
 
