@@ -68,7 +68,7 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
           }
         }
       }
-      toast.success("Problema criado com sucesso");
+      toast.success("Pedido de apoio criado com sucesso");
       onCreated?.(data);
       onOpenChange(false);
       setForm(empty);
@@ -89,10 +89,10 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
         <SheetHeader className="px-6 py-5 border-b border-[#E5E3DB] bg-white">
           <p className="label-mini">Novo registo</p>
           <SheetTitle className="text-2xl font-medium tracking-tight" style={{ fontFamily: "Chivo" }}>
-            Registar problema
+            Registar pedido de apoio
           </SheetTitle>
           <SheetDescription className="text-sm text-[#5C665D]">
-            Registo de um novo problema reportado por uma farmácia.
+            Registo de um novo pedido de apoio reportado por uma farmácia.
           </SheetDescription>
         </SheetHeader>
 
@@ -144,7 +144,7 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
           <Field label="Descrição" required>
             <textarea data-testid="form-descricao" required rows={4} className={inputCls}
               value={form.descricao} onChange={(e) => update("descricao", e.target.value)}
-              placeholder="Descreva o problema em detalhe..." />
+              placeholder="Descreva o pedido de apoio em detalhe..." />
           </Field>
 
           <div className="grid grid-cols-3 gap-4">
@@ -196,7 +196,7 @@ export default function CreateProblemaSheet({ open, onOpenChange, onCreated }) {
             <button data-testid="form-submit" type="submit" disabled={loading}
               className="px-5 py-2 text-sm font-medium rounded-sm transition-colors disabled:opacity-60"
               style={{ backgroundColor: "#384C37", color: "#FFFFFF" }}>
-              {loading ? "A guardar..." : "Criar problema"}
+              {loading ? "A guardar..." : "Criar pedido de apoio"}
             </button>
           </div>
         </form>

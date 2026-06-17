@@ -115,12 +115,12 @@ export default function Dashboard() {
       {/* Recent */}
       <div className="surface-card">
         <div className="px-5 py-4 border-b border-[#E5E3DB] flex items-center justify-between">
-          <span className="label-mini">Problemas recentes</span>
+          <span className="label-mini">Pedidos de apoio recentes</span>
         </div>
         {loading ? (
           <p className="text-sm text-[#8A938B] py-10 text-center">A carregar...</p>
         ) : recent.length === 0 ? (
-          <p className="text-sm text-[#8A938B] py-10 text-center" data-testid="dashboard-empty">Ainda sem problemas registados.</p>
+          <p className="text-sm text-[#8A938B] py-10 text-center" data-testid="dashboard-empty">Ainda sem pedidos de apoio registados.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>

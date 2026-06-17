@@ -6,7 +6,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import api, { formatApiError, API } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { ESTADOS, StatusPill, PriorityDot, formatDate, formatDateTime } from "@/lib/constants";
+import { ESTADOS, TIPOLOGIAS, PRIORIDADES, StatusPill, PriorityDot, formatDate, formatDateTime } from "@/lib/constants";
 import {
   ArrowRight, ChatTeardropDots, Calendar, User, Buildings, Flask, Tag,
   Paperclip, UploadSimple, Trash, ClockClockwise, Pencil, Plus,
@@ -52,6 +52,10 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
   const [novoEstado, setNovoEstado] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [savingEdit, setSavingEdit] = useState(false);
+  const editInputCls = "w-full mt-1 px-3 py-2 bg-white border border-[#E5E3DB] rounded-sm text-sm focus:outline-none focus:border-[#384C37] focus:ring-1 focus:ring-[#384C37]";
 
   const refresh = async () => {
     if (!problema?.id) return;
@@ -61,6 +65,7 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
 
   useEffect(() => {
     if (!problema?.id || !open) return;
+    setEditing(false);
     let cancelled = false;
     (async () => {
       setLoading(true);
@@ -77,6 +82,43 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
   }, [problema?.id, open]);
 
   const canEdit = isAdmin || data?.criado_por_id === currentUser?.id;
+
+  const startEdit = () => {
+    setEditForm({
+      farmacia: data.farmacia || "",
+      laboratorio: data.laboratorio || "",
+      consultor: data.consultor || "",
+      tipologia: data.tipologia || "TFO",
+      prioridade: data.prioridade || "Media",
+      descricao: data.descricao || "",
+      data_prevista: data.data_prevista || "",
+    });
+    setEditing(true);
+  };
+
+  const handleSaveEdit = async () => {
+    setSavingEdit(true);
+    try {
+      const fields = ["farmacia", "laboratorio", "consultor", "tipologia", "prioridade", "descricao", "data_prevista"];
+      const payload = {};
+      fields.forEach((k) => {
+        if ((editForm[k] || "") !== (data[k] || "")) payload[k] = editForm[k];
+      });
+      if (Object.keys(payload).length === 0) {
+        setEditing(false);
+        return;
+      }
+      await api.patch(`/problemas/${problema.id}`, payload);
+      await refresh();
+      onUpdated?.();
+      setEditing(false);
+      toast.success("Pedido de apoio atualizado");
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail) || err.message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const handleAddFollowup = async (e) => {
     e.preventDefault();
@@ -168,10 +210,10 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
   };
 
   const handleDeleteProblema = async () => {
-    if (!window.confirm("Eliminar este problema definitivamente?")) return;
+    if (!window.confirm("Eliminar este pedido de apoio definitivamente?")) return;
     try {
       await api.delete(`/problemas/${problema.id}`);
-      toast.success("Problema eliminado");
+      toast.success("Pedido de apoio eliminado");
       onUpdated?.();
       onOpenChange(false);
     } catch (err) {
@@ -230,30 +272,91 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
             <div className="surface-card p-5">
               <div className="flex items-center justify-between mb-3">
                 <span className="label-mini">Detalhes</span>
-                {isAdmin && (
-                  <button onClick={handleDeleteProblema}
-                    data-testid="delete-problema-btn"
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[#B84A39] hover:bg-[#FBEAE7] rounded-sm">
-                    <Trash size={12} /> Eliminar
-                  </button>
-                )}
+                <div className="flex items-center gap-1">
+                  {canEdit && !editing && (
+                    <button onClick={startEdit}
+                      data-testid="edit-problema-btn"
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[#384C37] hover:bg-[#EAEFE9] rounded-sm">
+                      <Pencil size={12} /> Editar
+                    </button>
+                  )}
+                  {editing && (
+                    <>
+                      <button onClick={handleSaveEdit} disabled={savingEdit}
+                        data-testid="save-problema-btn"
+                        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-white bg-[#384C37] hover:opacity-90 rounded-sm disabled:opacity-60">
+                        {savingEdit ? "A guardar..." : "Guardar"}
+                      </button>
+                      <button onClick={() => setEditing(false)} disabled={savingEdit}
+                        className="inline-flex items-center gap-1 px-2 py-1 text-xs border border-[#E5E3DB] hover:bg-[#F0EFEB] rounded-sm">
+                        Cancelar
+                      </button>
+                    </>
+                  )}
+                  {isAdmin && !editing && (
+                    <button onClick={handleDeleteProblema}
+                      data-testid="delete-problema-btn"
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[#B84A39] hover:bg-[#FBEAE7] rounded-sm">
+                      <Trash size={12} /> Eliminar
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
-                <Info icon={Buildings} label="Farmácia" value={data.farmacia} />
-                <Info icon={Flask} label="Laboratório" value={data.laboratorio} />
-                <Info icon={User} label="Consultor" value={data.consultor} />
-                <Info icon={Tag} label="Tipologia" value={data.tipologia} />
-                <div className="flex items-start gap-2.5 py-2">
-                  <Tag size={14} className="text-[#8A938B] mt-0.5 shrink-0" />
+              {editing ? (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-4">
                   <div>
-                    <p className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Prioridade</p>
-                    <div className="mt-1"><PriorityDot prioridade={data.prioridade} /></div>
+                    <label className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Farmácia</label>
+                    <input className={editInputCls} value={editForm.farmacia}
+                      onChange={(e) => setEditForm((f) => ({ ...f, farmacia: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Laboratório</label>
+                    <input className={editInputCls} value={editForm.laboratorio}
+                      onChange={(e) => setEditForm((f) => ({ ...f, laboratorio: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Consultor</label>
+                    <input className={editInputCls} value={editForm.consultor}
+                      onChange={(e) => setEditForm((f) => ({ ...f, consultor: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Tipologia</label>
+                    <Select value={editForm.tipologia} onValueChange={(v) => setEditForm((f) => ({ ...f, tipologia: v }))}>
+                      <SelectTrigger className="h-9 mt-1 bg-white border-[#E5E3DB] rounded-sm text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>{TIPOLOGIAS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Prioridade</label>
+                    <Select value={editForm.prioridade} onValueChange={(v) => setEditForm((f) => ({ ...f, prioridade: v }))}>
+                      <SelectTrigger className="h-9 mt-1 bg-white border-[#E5E3DB] rounded-sm text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>{PRIORIDADES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Data prevista</label>
+                    <input type="date" className={editInputCls} value={editForm.data_prevista || ""}
+                      onChange={(e) => setEditForm((f) => ({ ...f, data_prevista: e.target.value }))} />
                   </div>
                 </div>
-                <Info icon={Calendar} label="Data prevista" value={data.data_prevista ? formatDate(data.data_prevista) : "—"} />
-                <Info icon={Calendar} label="Criado em" value={formatDateTime(data.created_at)} />
-                <Info icon={User} label="Criado por" value={data.criado_por} />
-              </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
+                  <Info icon={Buildings} label="Farmácia" value={data.farmacia} />
+                  <Info icon={Flask} label="Laboratório" value={data.laboratorio} />
+                  <Info icon={User} label="Consultor" value={data.consultor} />
+                  <Info icon={Tag} label="Tipologia" value={data.tipologia} />
+                  <div className="flex items-start gap-2.5 py-2">
+                    <Tag size={14} className="text-[#8A938B] mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B]">Prioridade</p>
+                      <div className="mt-1"><PriorityDot prioridade={data.prioridade} /></div>
+                    </div>
+                  </div>
+                  <Info icon={Calendar} label="Data prevista" value={data.data_prevista ? formatDate(data.data_prevista) : "—"} />
+                  <Info icon={Calendar} label="Criado em" value={formatDateTime(data.created_at)} />
+                  <Info icon={User} label="Criado por" value={data.criado_por} />
+                </div>
+              )}
 
               {/* Assignment */}
               <div className="pt-4 border-t border-[#E5E3DB]">
@@ -278,7 +381,15 @@ export default function ProblemaDetailSheet({ problema, open, onOpenChange, onUp
 
               <div className="pt-4 mt-4 border-t border-[#E5E3DB]">
                 <p className="text-[10px] tracking-[0.18em] uppercase font-semibold text-[#8A938B] mb-2">Descrição</p>
-                <p className="text-sm text-[#1E231F] whitespace-pre-wrap leading-relaxed">{data.descricao}</p>
+                {editing ? (
+                  <textarea
+                    className={editInputCls + " min-h-[120px] resize-y"}
+                    value={editForm.descricao}
+                    onChange={(e) => setEditForm((f) => ({ ...f, descricao: e.target.value }))}
+                  />
+                ) : (
+                  <p className="text-sm text-[#1E231F] whitespace-pre-wrap leading-relaxed">{data.descricao}</p>
+                )}
               </div>
             </div>
 

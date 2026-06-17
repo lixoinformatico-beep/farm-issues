@@ -32,7 +32,7 @@ export default function Relatorios() {
           <div>
             <h2 className="text-xl font-medium tracking-tight">Exportação CSV</h2>
             <p className="text-sm text-[#5C665D] mt-1">
-              Descarregue todos os problemas registados em formato CSV (separador <span className="mono">;</span>) para Excel ou Numbers.
+              Descarregue todos os pedidos de apoio registados em formato CSV (separador <span className="mono">;</span>) para Excel ou Numbers.
             </p>
           </div>
           <button
